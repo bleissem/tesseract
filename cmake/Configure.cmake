@@ -1,3 +1,12 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 ################################################################################
 #
 # configure
@@ -79,7 +88,6 @@ set(include_files_list
     stdbool.h
     stdint.h
     stdlib.h
-    strings.h
     string.h
     sys/ipc.h
     sys/shm.h
@@ -97,12 +105,6 @@ set(include_files_list
 )
 check_includes(include_files_list)
 
-set(functions_list
-    getline
-    snprintf
-)
-check_functions(functions_list)
-
 set(types_list
     "long long int"
     off_t
@@ -111,6 +113,21 @@ set(types_list
     _Bool
 )
 check_types(types_list)
+
+file(APPEND ${AUTOCONFIG_SRC} "
+/* Version number */
+#cmakedefine PACKAGE_VERSION \"${PACKAGE_VERSION}\"
+#cmakedefine GRAPHICS_DISABLED ${GRAPHICS_DISABLED}
+#cmakedefine DISABLED_LEGACY_ENGINE ${DISABLED_LEGACY_ENGINE}
+#cmakedefine HAVE_LIBARCHIVE ${HAVE_LIBARCHIVE}
+")
+
+if(TESSDATA_PREFIX)
+ add_definitions(-DTESSDATA_PREFIX=${TESSDATA_PREFIX})
+ file(APPEND ${AUTOCONFIG_SRC} "
+#cmakedefine TESSDATA_PREFIX ${TESSDATA_PREFIX}
+")
+endif()
 
 test_big_endian(WORDS_BIGENDIAN)
 
