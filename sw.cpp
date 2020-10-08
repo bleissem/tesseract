@@ -60,6 +60,11 @@ void build(Solution &s)
             }
         }
 
+        auto win_or_mingw =
+            libtesseract.getBuildSettings().TargetOS.Type == OSType::Windows ||
+            libtesseract.getBuildSettings().TargetOS.Type == OSType::Mingw
+            ;
+
         // check fma flags
         libtesseract -= "src/arch/dotproductfma.cpp";
 
@@ -69,9 +74,9 @@ void build(Solution &s)
             libtesseract["src/arch/dotproductsse.cpp"].args.push_back("-msse4.1");
             libtesseract["src/arch/intsimdmatrixsse.cpp"].args.push_back("-msse4.1");
             libtesseract["src/arch/intsimdmatrixavx2.cpp"].args.push_back("-mavx2");
-
-            libtesseract += "pthread"_slib;
         }
+        if (!win_or_mingw)
+            libtesseract += "pthread"_slib;
 
         libtesseract.Public += "HAVE_CONFIG_H"_d;
         libtesseract.Public += "_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS=1"_d;
@@ -82,7 +87,7 @@ void build(Solution &s)
         libtesseract.Public += "org.sw.demo.danbloomberg.leptonica"_dep;
         libtesseract.Public += "org.sw.demo.libarchive.libarchive"_dep;
 
-        if (libtesseract.getBuildSettings().TargetOS.Type == OSType::Windows)
+        if (win_or_mingw)
         {
             libtesseract.Public += "ws2_32.lib"_slib;
             libtesseract.Protected += "NOMINMAX"_def;
@@ -200,27 +205,18 @@ void check(Checker &c)
     s.checkFunctionExists("getline");
     s.checkIncludeExists("dlfcn.h");
     s.checkIncludeExists("inttypes.h");
-    s.checkIncludeExists("limits.h");
-    s.checkIncludeExists("malloc.h");
     s.checkIncludeExists("memory.h");
-    s.checkIncludeExists("stdbool.h");
     s.checkIncludeExists("stdint.h");
     s.checkIncludeExists("stdlib.h");
     s.checkIncludeExists("string.h");
-    s.checkIncludeExists("sys/ipc.h");
-    s.checkIncludeExists("sys/shm.h");
     s.checkIncludeExists("sys/stat.h");
     s.checkIncludeExists("sys/types.h");
-    s.checkIncludeExists("sys/wait.h");
     s.checkIncludeExists("tiffio.h");
     s.checkIncludeExists("unistd.h");
     s.checkTypeSize("long long int");
-    s.checkTypeSize("mbstate_t");
-    s.checkTypeSize("off_t");
     s.checkTypeSize("size_t");
     s.checkTypeSize("void *");
     s.checkTypeSize("wchar_t");
-    s.checkTypeSize("_Bool");
     {
         auto &c = s.checkSymbolExists("snprintf");
         c.Parameters.Includes.push_back("stdio.h");
